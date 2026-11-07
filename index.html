@@ -55,7 +55,7 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+button:active {
   background: #18b2f3;
 }
 
@@ -81,6 +81,7 @@ button:hover {
   background: white;
   border-radius: 13px;
   overflow: hidden;
+  position: relative;
 }
 
 iframe {
@@ -129,15 +130,15 @@ footer {
 
   <div class="address">
     <input id="url"
-      placeholder="Buscar o escribir dirección web..."
+      placeholder="Buscar o escribir término..."
       type="text">
 
     <button onclick="go()">IR</button>
   </div>
 
   <div class="tabs">
-    <button onclick="google()">Buscar</button>
-    <button onclick="youtube()">YouTube</button>
+    <button onclick="searchEngine()">Buscar</button>
+    <button onclick="youtubeEmbed()">YouTube</button>
     <button onclick="home()">Inicio</button>
   </div>
 
@@ -150,8 +151,7 @@ footer {
   </div>
 
   <div class="message" id="message">
-    Algunas páginas bloquean su visualización integrada.
-    Puedes abrirlas externamente si la pantalla queda en blanco.
+    Nota: Motores como Google o sitios principales bloquean su carga interna. Usa el botón inferior para abrir sitios externos.
   </div>
 
   <button style="width:100%"
@@ -174,15 +174,20 @@ function normalize(value) {
 
   if (!value) return "";
 
-  // Si contiene youtube.com/watch?v= convertimos a embed
+  // Convertir enlaces de YouTube a formato embebido
   if (value.includes("youtube.com/watch?v=")) {
     const videoId = value.split("v=")[1].split("&")[0];
     return "https://www.youtube.com/embed/" + videoId;
   }
+  
+  if (value.includes("youtu.be/")) {
+    const videoId = value.split("youtu.be/")[1].split("?")[0];
+    return "https://www.youtube.com/embed/" + videoId;
+  }
 
-  // Si incluye espacios o no parece dominio, usamos buscador incrustable (DuckDuckGo HTML)
-  if (value.includes(" ") || (!value.includes(".") && !value.startsWith("localhost"))) {
-    return "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(value);
+  // Si es una búsqueda o palabra sin punto
+  if (value.includes(" ") || !value.includes(".")) {
+    return "https://www.bing.com/search?q=" + encodeURIComponent(value);
   }
 
   if (!/^https?:\/\//i.test(value)) {
@@ -205,9 +210,6 @@ function loadPage(url) {
   frame.title = "WebDisplays Browser";
 
   screen.appendChild(frame);
-
-  document.getElementById("message").textContent =
-    "Si aparece una pantalla blanca, este sitio prohíbe cargarse dentro de un marco iframe. Usa el botón inferior.";
 }
 
 function go() {
@@ -217,14 +219,13 @@ function go() {
   if (url) loadPage(url);
 }
 
-function google() {
-  // Motor de búsqueda en modo iframe
-  loadPage("https://html.duckduckgo.com/html/?q=");
+function searchEngine() {
+  const query = document.getElementById("url").value || "Roblox";
+  loadPage("https://www.bing.com/search?q=" + encodeURIComponent(query));
 }
 
-function youtube() {
-  // Enlace directo al reproductor embebido o buscador de videos compatible
-  loadPage("https://www.youtube.com/embed/");
+function youtubeEmbed() {
+  loadPage("https://www.youtube.com/embed/fJ9rUzIMcZQ"); // Ejemplo de reproductor
 }
 
 function home() {
@@ -244,6 +245,9 @@ function home() {
 function external() {
   if (currentURL) {
     window.open(currentURL, "_blank");
+  } else {
+    const val = document.getElementById("url").value;
+    if (val) window.open(normalize(val), "_blank");
   }
 }
 
