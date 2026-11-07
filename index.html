@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -53,6 +52,11 @@ button {
   background: #159ed8;
   color: white;
   font-weight: bold;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #18b2f3;
 }
 
 .tabs {
@@ -125,14 +129,14 @@ footer {
 
   <div class="address">
     <input id="url"
-      placeholder="Buscar o escribir dirección..."
+      placeholder="Buscar o escribir dirección web..."
       type="text">
 
     <button onclick="go()">IR</button>
   </div>
 
   <div class="tabs">
-    <button onclick="google()">Google</button>
+    <button onclick="google()">Buscar</button>
     <button onclick="youtube()">YouTube</button>
     <button onclick="home()">Inicio</button>
   </div>
@@ -147,7 +151,7 @@ footer {
 
   <div class="message" id="message">
     Algunas páginas bloquean su visualización integrada.
-    Puedes abrirlas externamente.
+    Puedes abrirlas externamente si la pantalla queda en blanco.
   </div>
 
   <button style="width:100%"
@@ -170,9 +174,15 @@ function normalize(value) {
 
   if (!value) return "";
 
-  if (!value.includes(".") && !value.includes(" ")) {
-    return "https://www.google.com/search?q=" +
-      encodeURIComponent(value);
+  // Si contiene youtube.com/watch?v= convertimos a embed
+  if (value.includes("youtube.com/watch?v=")) {
+    const videoId = value.split("v=")[1].split("&")[0];
+    return "https://www.youtube.com/embed/" + videoId;
+  }
+
+  // Si incluye espacios o no parece dominio, usamos buscador incrustable (DuckDuckGo HTML)
+  if (value.includes(" ") || (!value.includes(".") && !value.startsWith("localhost"))) {
+    return "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(value);
   }
 
   if (!/^https?:\/\//i.test(value)) {
@@ -197,7 +207,7 @@ function loadPage(url) {
   screen.appendChild(frame);
 
   document.getElementById("message").textContent =
-    "Si aparece una pantalla blanca, esta página probablemente bloquea los iframes. Usa abrir externamente.";
+    "Si aparece una pantalla blanca, este sitio prohíbe cargarse dentro de un marco iframe. Usa el botón inferior.";
 }
 
 function go() {
@@ -208,11 +218,13 @@ function go() {
 }
 
 function google() {
-  loadPage("https://www.google.com/");
+  // Motor de búsqueda en modo iframe
+  loadPage("https://html.duckduckgo.com/html/?q=");
 }
 
 function youtube() {
-  loadPage("https://www.youtube.com/");
+  // Enlace directo al reproductor embebido o buscador de videos compatible
+  loadPage("https://www.youtube.com/embed/");
 }
 
 function home() {
