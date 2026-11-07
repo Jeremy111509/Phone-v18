@@ -124,21 +124,21 @@ footer {
 
 <body>
 
-<header>🌐 WebDisplays</header>
+<header>🌐 WebDisplays Bedrock</header>
 
 <div class="browser">
 
   <div class="address">
     <input id="url"
-      placeholder="Buscar o escribir término..."
+      placeholder="Escribe una URL o busca..."
       type="text">
 
     <button onclick="go()">IR</button>
   </div>
 
   <div class="tabs">
-    <button onclick="searchEngine()">Buscar</button>
-    <button onclick="youtubeEmbed()">YouTube</button>
+    <button onclick="searchGoogle()">Google</button>
+    <button onclick="searchYoutube()">YouTube</button>
     <button onclick="home()">Inicio</button>
   </div>
 
@@ -146,15 +146,15 @@ footer {
     <div class="home">
       <h1>WebPhone</h1>
       <p>Tu navegador WebDisplays Bedrock</p>
-      <p>Busca o escribe una dirección web.</p>
+      <p>Escribe una dirección web para empezar.</p>
     </div>
   </div>
 
   <div class="message" id="message">
-    Nota: Motores como Google o sitios principales bloquean su carga interna. Usa el botón inferior para abrir sitios externos.
+    Consejo: Si una página web no carga dentro del marco por restricciones de seguridad, usa el botón de abajo para verla completa.
   </div>
 
-  <button style="width:100%"
+  <button style="width:100%; margin-bottom: 8px;"
     onclick="external()">
     Abrir página externamente
   </button>
@@ -162,7 +162,7 @@ footer {
 </div>
 
 <footer>
-WebDisplays Bedrock · Experimental v2
+WebDisplays Bedrock · Experimental v3
 </footer>
 
 <script>
@@ -171,23 +171,11 @@ let currentURL = "";
 
 function normalize(value) {
   value = value.trim();
-
   if (!value) return "";
 
-  // Convertir enlaces de YouTube a formato embebido
-  if (value.includes("youtube.com/watch?v=")) {
-    const videoId = value.split("v=")[1].split("&")[0];
-    return "https://www.youtube.com/embed/" + videoId;
-  }
-  
-  if (value.includes("youtu.be/")) {
-    const videoId = value.split("youtu.be/")[1].split("?")[0];
-    return "https://www.youtube.com/embed/" + videoId;
-  }
-
-  // Si es una búsqueda o palabra sin punto
+  // Si es un término de búsqueda (tiene espacios o no tiene punto)
   if (value.includes(" ") || !value.includes(".")) {
-    return "https://www.bing.com/search?q=" + encodeURIComponent(value);
+    return "https://html.duckduckgo.com/html/?q=" + encodeURIComponent(value);
   }
 
   if (!/^https?:\/\//i.test(value)) {
@@ -199,14 +187,15 @@ function normalize(value) {
 
 function loadPage(url) {
   currentURL = url;
-
   document.getElementById("url").value = url;
 
   const screen = document.getElementById("screen");
   screen.innerHTML = "";
 
   const frame = document.createElement("iframe");
-  frame.src = url;
+  
+  // Usamos un proxy de redirección HTML para evitar bloqueos en la mayoría de webs
+  frame.src = "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
   frame.title = "WebDisplays Browser";
 
   screen.appendChild(frame);
@@ -215,22 +204,19 @@ function loadPage(url) {
 function go() {
   const value = document.getElementById("url").value;
   const url = normalize(value);
-
   if (url) loadPage(url);
 }
 
-function searchEngine() {
-  const query = document.getElementById("url").value || "Roblox";
-  loadPage("https://www.bing.com/search?q=" + encodeURIComponent(query));
+function searchGoogle() {
+  loadPage("https://html.duckduckgo.com/");
 }
 
-function youtubeEmbed() {
-  loadPage("https://www.youtube.com/embed/fJ9rUzIMcZQ"); // Ejemplo de reproductor
+function searchYoutube() {
+  loadPage("https://www.youtube.com/");
 }
 
 function home() {
   currentURL = "";
-
   document.getElementById("url").value = "";
 
   document.getElementById("screen").innerHTML = `
@@ -243,11 +229,10 @@ function home() {
 }
 
 function external() {
-  if (currentURL) {
-    window.open(currentURL, "_blank");
-  } else {
-    const val = document.getElementById("url").value;
-    if (val) window.open(normalize(val), "_blank");
+  const inputVal = document.getElementById("url").value;
+  const target = currentURL || normalize(inputVal);
+  if (target) {
+    window.open(target, "_blank");
   }
 }
 
