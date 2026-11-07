@@ -21,47 +21,61 @@ body {
 header {
   padding: 18px;
   background: #111c2b;
-  border-bottom: 1px solid #263d55;
   font-size: 21px;
   font-weight: bold;
+  border-bottom: 1px solid #263d55;
 }
 
 .browser {
-  padding: 15px;
+  padding: 14px;
 }
 
 .address {
   display: flex;
-  gap: 8px;
+  gap: 7px;
 }
 
 input {
   flex: 1;
   min-width: 0;
-  padding: 14px;
+  padding: 13px;
   border-radius: 12px;
   border: 1px solid #344c66;
   background: #172438;
   color: white;
-  font-size: 15px;
+  font-size: 14px;
 }
 
 button {
-  border: 0;
-  border-radius: 12px;
-  padding: 12px 17px;
-  background: #28a9e0;
+  border: none;
+  border-radius: 10px;
+  padding: 12px;
+  background: #159ed8;
   color: white;
   font-weight: bold;
 }
 
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.tabs button {
+  flex: 1;
+  background: #20364d;
+}
+
+.tabs button:active {
+  background: #159ed8;
+}
+
 .screen {
-  margin-top: 18px;
-  height: 70vh;
+  margin-top: 15px;
+  height: 72vh;
   min-height: 350px;
-  background: #111c2b;
-  border: 1px solid #263d55;
-  border-radius: 16px;
+  background: white;
+  border-radius: 13px;
   overflow: hidden;
 }
 
@@ -69,24 +83,37 @@ iframe {
   width: 100%;
   height: 100%;
   border: none;
-  background: white;
 }
 
 .home {
+  background: #111c2b;
+  height: 100%;
   text-align: center;
-  padding: 55px 15px;
+  padding: 60px 15px;
 }
 
 .home h1 {
+  color: #38baff;
   font-size: 30px;
-  color: #39baff;
 }
 
-.small {
-  color: #91a7bd;
-  font-size: 13px;
+.home p {
+  color: #a9bdd0;
 }
 
+.message {
+  color: #a9bdd0;
+  font-size: 12px;
+  padding: 12px 3px;
+  line-height: 1.5;
+}
+
+footer {
+  text-align: center;
+  padding: 12px;
+  color: #728ba2;
+  font-size: 12px;
+}
 </style>
 </head>
 
@@ -97,56 +124,122 @@ iframe {
 <div class="browser">
 
   <div class="address">
-    <input
-      id="url"
-      placeholder="https://example.com"
-      type="text"
-    >
+    <input id="url"
+      placeholder="Buscar o escribir dirección..."
+      type="text">
+
     <button onclick="go()">IR</button>
+  </div>
+
+  <div class="tabs">
+    <button onclick="google()">Google</button>
+    <button onclick="youtube()">YouTube</button>
+    <button onclick="home()">Inicio</button>
   </div>
 
   <div class="screen" id="screen">
     <div class="home">
       <h1>WebPhone</h1>
-      <p>Tu navegador para Minecraft Bedrock</p>
-      <p class="small">
-        WebDisplays Bedrock Experimental v1
-      </p>
+      <p>Tu navegador WebDisplays Bedrock</p>
+      <p>Busca o escribe una dirección web.</p>
     </div>
   </div>
 
+  <div class="message" id="message">
+    Algunas páginas bloquean su visualización integrada.
+    Puedes abrirlas externamente.
+  </div>
+
+  <button style="width:100%"
+    onclick="external()">
+    Abrir página externamente
+  </button>
+
 </div>
 
+<footer>
+WebDisplays Bedrock · Experimental v2
+</footer>
+
 <script>
-function go() {
-  let url = document.getElementById("url").value.trim();
 
-  if (!url) return;
+let currentURL = "";
 
-  if (!/^https?:\/\//i.test(url)) {
-    url = "https://" + url;
+function normalize(value) {
+  value = value.trim();
+
+  if (!value) return "";
+
+  if (!value.includes(".") && !value.includes(" ")) {
+    return "https://www.google.com/search?q=" +
+      encodeURIComponent(value);
   }
 
-  try {
-    const parsed = new URL(url);
+  if (!/^https?:\/\//i.test(value)) {
+    value = "https://" + value;
+  }
 
-    if (!["http:", "https:"].includes(parsed.protocol)) {
-      return;
-    }
+  return value;
+}
 
-    document.getElementById("url").value = parsed.href;
+function loadPage(url) {
+  currentURL = url;
 
-    document.getElementById("screen").innerHTML = "";
+  document.getElementById("url").value = url;
 
-    const frame = document.createElement("iframe");
-    frame.src = parsed.href;
+  const screen = document.getElementById("screen");
+  screen.innerHTML = "";
 
-    document.getElementById("screen").appendChild(frame);
+  const frame = document.createElement("iframe");
+  frame.src = url;
+  frame.title = "WebDisplays Browser";
 
-  } catch {
-    alert("Dirección no válida");
+  screen.appendChild(frame);
+
+  document.getElementById("message").textContent =
+    "Si aparece una pantalla blanca, esta página probablemente bloquea los iframes. Usa abrir externamente.";
+}
+
+function go() {
+  const value = document.getElementById("url").value;
+  const url = normalize(value);
+
+  if (url) loadPage(url);
+}
+
+function google() {
+  loadPage("https://www.google.com/");
+}
+
+function youtube() {
+  loadPage("https://www.youtube.com/");
+}
+
+function home() {
+  currentURL = "";
+
+  document.getElementById("url").value = "";
+
+  document.getElementById("screen").innerHTML = `
+    <div class="home">
+      <h1>WebPhone</h1>
+      <p>Bienvenido a WebDisplays</p>
+      <p>Tu navegador experimental.</p>
+    </div>
+  `;
+}
+
+function external() {
+  if (currentURL) {
+    window.open(currentURL, "_blank");
   }
 }
+
+document.getElementById("url")
+  .addEventListener("keydown", function(event) {
+    if (event.key === "Enter") go();
+  });
+
 </script>
 
 </body>
