@@ -1,0 +1,153 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WebDisplays Bedrock</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #080d16;
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+header {
+  padding: 18px;
+  background: #111c2b;
+  border-bottom: 1px solid #263d55;
+  font-size: 21px;
+  font-weight: bold;
+}
+
+.browser {
+  padding: 15px;
+}
+
+.address {
+  display: flex;
+  gap: 8px;
+}
+
+input {
+  flex: 1;
+  min-width: 0;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid #344c66;
+  background: #172438;
+  color: white;
+  font-size: 15px;
+}
+
+button {
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 17px;
+  background: #28a9e0;
+  color: white;
+  font-weight: bold;
+}
+
+.screen {
+  margin-top: 18px;
+  height: 70vh;
+  min-height: 350px;
+  background: #111c2b;
+  border: 1px solid #263d55;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: white;
+}
+
+.home {
+  text-align: center;
+  padding: 55px 15px;
+}
+
+.home h1 {
+  font-size: 30px;
+  color: #39baff;
+}
+
+.small {
+  color: #91a7bd;
+  font-size: 13px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>🌐 WebDisplays</header>
+
+<div class="browser">
+
+  <div class="address">
+    <input
+      id="url"
+      placeholder="https://example.com"
+      type="text"
+    >
+    <button onclick="go()">IR</button>
+  </div>
+
+  <div class="screen" id="screen">
+    <div class="home">
+      <h1>WebPhone</h1>
+      <p>Tu navegador para Minecraft Bedrock</p>
+      <p class="small">
+        WebDisplays Bedrock Experimental v1
+      </p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function go() {
+  let url = document.getElementById("url").value.trim();
+
+  if (!url) return;
+
+  if (!/^https?:\/\//i.test(url)) {
+    url = "https://" + url;
+  }
+
+  try {
+    const parsed = new URL(url);
+
+    if (!["http:", "https:"].includes(parsed.protocol)) {
+      return;
+    }
+
+    document.getElementById("url").value = parsed.href;
+
+    document.getElementById("screen").innerHTML = "";
+
+    const frame = document.createElement("iframe");
+    frame.src = parsed.href;
+
+    document.getElementById("screen").appendChild(frame);
+
+  } catch {
+    alert("Dirección no válida");
+  }
+}
+</script>
+
+</body>
+</html>
